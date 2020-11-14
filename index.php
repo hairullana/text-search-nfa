@@ -1,67 +1,84 @@
 <?php
 
+// koneksi database
 include 'connect-db.php';
 
+// ambil data berita di database
 $berita = mysqli_query($connect, "SELECT * FROM berita");
 
-
+// jika tombol pencarian di tekan
 if (isset($_POST["cari"])){
+
     // ambil isi form
     $keyword = $_POST["keyword"];
+
     // biar aman
     $keyword = htmlspecialchars($keyword);
-    $keyword = strtolower($keyword);
-    // pecah string
-    $string = str_split($keyword);
-    // jumlah state
-    $totalState = count($string) + 1    ;
 
-    
+    // buat semua huruf jadi kecil
+    $keyword = strtolower($keyword);
+
+    // pecah string
+    $arrayKeyword = str_split($keyword);
+
+    // jumlah state
+    $totalState = count($arrayKeyword) + 1;
 }
 
+// mesin nfa
+function transisi ($berita) {
 
-function transisi ($kata) {
-    global $string;
+    // mengambil variabel diluar fungsi
+    global $arrayKeyword;
     global $totalState;
 
-    $lokasi = 0;
+    // ubah kata jadi kecil
+    $berita = strtolower($berita);
+    // pecah string
+    $arrayBerita = str_split($berita);
+    // hitung total array
+    $totalArrayBerita = count($arrayBerita);
 
-    $kata = strtolower($kata);
-    $kata = str_split($kata);
-    $totalKata = count($kata);
-
+    // buat kondisi false untuk keyword tidak ditemukan
     $kondisi = false;
+    // indeks ditemukannya keyword, index -1 artinya keyword tidak ditemukan pada indeks 0,1,2,dst
     $indeks = -1;
+    // patokan berita
     $n = 0;
+    // patokan keyword
     $m = 0;
-    while ($totalKata > 0) {
-        // apakah katanya sama
-        if ($kata[$n] == $string[$m]) {
-            if ($m == $totalState-2) {
-                $kondisi = true;
-                $indeks = $n - ($totalState-2);
-                $totalKata = 0;
 
+    // true jika $arrayBerita > 0
+    while ($totalArrayBerita > 0) {
+        // apakah katanya sama
+        if ($arrayBerita[$n] == $arrayKeyword[$m]) {
+            
+            // jika kata ditemukan. eg : covid, indeks terakhir = m = 4, $totalstate - 2 = (total huruf covid + 1) - 2 = 6-2 = 4. if (4==4) a.k.a true
+            if ($m == $totalState-2) {
+                // ubah kondisi ke true
+                $kondisi = true;
+                // tentukan indeks kata ditemukan. eg : covid, tercovid, masuk ke kondisi ini ketika $n=7. $indeks = $n - ($totalState-2) = 7 - (6-2) = 7-4 = 3 (indeks ke 3 = c). $totalState-2 karena mencari total indeks covid = 4.
+                $indeks = $n - ($totalState-2);
+                // karena sdh ditemukan, $arrayBerita ubah jadi 0 supaya while berhenti
+                $arrayBerita = 0;
             }
+
+            // jika huruf sama maka increment n dan m
             $n++;
             $m++;
-        }else {
+        }else {     // jika tidak sama
+            // $m ulangi dari 0
             $m = 0;
+            // $n increment untuk mencari yg sesuai dengan $m
             $n++;
-            $kondisi = false;
         }
 
-        $totalKata--;   
+        // decrement $arrayBerita setiap while berjalan
+        $totalArrayBerita--;   
     }
 
+    // return indeks 
     return $indeks;
-    //$indeks = 
-    // if ( $kondisi == true ) {
-    //     echo "ditemukan pada indeks ke-" . $indeks ;
-    // }else {
-    //     echo "tidak ditemukan";
-    // }
-
 }
 
 ?>
@@ -69,53 +86,170 @@ function transisi ($kata) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Text Search NFA</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="bootstrap-4.4.1/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link href="fontawesome/css/all.css" rel="stylesheet">
+    <!-- My CSS -->
+    <style>
+        .form-control, {
+		font-size: 16px;
+		transition: all 0.4s;
+		box-shadow: none;
+        }
+        .form-control:focus, {
+            border-color: #5cb85c;
+        }
+        .form-control, .btn, .input-group-text {
+            border-radius: 50px;
+            outline: none !important;
+        }
+        .input-group-text {
+            background:white;
+        }
+    </style>
+
 </head>
 <body>
 
-    <h3>NFA</h3>
-
-    
-
-
-    <form action="" method="POST">
-        <input type="text" id="keyword" name="keyword" placeholder="keyword">
-        <button type="submit" id="cari" name="cari">Cari Berita</button>
-    </form>
-
-    <br>
-    <br>
+    <!-- navbar -->
+    <div class="navbar navbar-dark bg-light fixed-top mb-5">
+        <div class="container">
+            <div class="navbar-brand"><a href="/text-search-nfa"><img src="logo.png" width=125 alt=""></a></div>
+        </div>
+    </div>
+    <!-- end navbar -->
 
 
+    <!-- jika pencarian dilakukan -->
     <?php if (isset($_POST["cari"])) : ?>
-        Kata Kunci = <?= $keyword ?> <br>
-        Total State = <?= $totalState ?> <br>
-        Nama State = <?php for ($n=1;$n<=$totalState;$n++){ echo $n . " "; } ?> <br>
-        Initial State = 1 <br>
-        Final State = <?= $totalState ?><br>
-        Delta = <br>
 
+        <!-- ambil keyword -->
+        <?php
+            $keyword = $_POST["keyword"]
+        ?>
         
 
-        <table cellpadding=15 border=1>
-            <tr>
-                <td>ID</td>
-                <td>Judul</td>
-                <td>Isi</td>
-            </tr>
-            <tr>
+        <!-- card untuk informasi pencarian -->
+        <div class="container my-5">
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <div class="card mt-5">
+                        <div class="card-header text-center mb-0">
+                            <!-- form pencarian -->
+                            <form action="" method="POST">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></div>
+                                    </div>
+                                    <input type="text" class="form-control" id="keyword" name="keyword" value="<?= $keyword ?>">
+                                </div>
+                                <div class="form-group mt-2">
+                                    <div class="col-md-4 offset-md-4">
+                                        <button type="submit" id="cari" class="form-control btn btn-danger" name="cari">Search</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- informasi keyword -->
+                        <div class="card-body ml-3">
+                            Kata Kunci = <?= $keyword ?> <br>
+                            Total State = <?= $totalState ?> <br>
+                            Nama State = <?php for ($n=1;$n<=$totalState;$n++){ echo $n . " "; } ?> <br>
+                            Initial State = 1 <br>
+                            Final State = <?= $totalState ?><br>
+                            Delta = <br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- list berita yg ditemukan -->
+        <div class="container">
+            <div class="row">
+
+            <!-- mengambil data berita -->
             <?php foreach ($berita as $data) : ?>
-                <?php if ( transisi($data["isi"]) > -1 ) : ?>
-                <td><?= $data["id_berita"] ?></td>
-                <td><?= $data["judul"] ?></td>
-                <td><?= $data["isi"] ?></td>
-                <td><?php echo "ditemukan pada indeks ke-" .  transisi($data["isi"]); ?></td>
+                
+                <!-- jika terdapat kata yg ditemukan -->
+                <?php if ( transisi($data["isi"]) == true ) : ?>
+
+                    <!-- kotak berita -->
+                    <div class="col-md-6">
+                        <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+                            <div class="col p-4 flex-column position-static">
+
+                                <!-- judul -->
+                                <h3 class="mb-1"><?= substr($data["judul"],0,30) . "..." ?></h3>
+
+                                <!-- informasi indeks -->
+                                <div class="mb-1 text-muted">ditemukan pada indeks ke-<?= transisi($data["isi"]); ?></div>
+
+                                <!-- isi artikel -->
+                                <p class="card-text mb-1">
+                                    <?php
+                                        // jika ditemukan pada 150 kata pertama
+                                        if ( transisi($data["isi"]) < 150 ) {
+                                            // tampilan preview berita
+                                            $isiBerita = substr($data["isi"],0,175) . "...";
+                                            // pecah
+                                            $isiBerita = str_split($isiBerita);
+                                            // hitung array
+                                            $totalIsiBerita = count($isiBerita);
+                                            // untuk indeks 
+                                            $i=0;
+                                            // mencari keyword
+                                            while( $totalIsiBerita > 0 ){
+                                                // kalau keyword maka buat tebal
+                                                if ( $i >= transisi($data["isi"]) && $i <= transisi($data["isi"])+($totalState-2)) {
+                                                    echo "<b>" . $isiBerita[$i] . "</b>";
+                                                }else {
+                                                    // jika tidak ya biarin gan
+                                                    echo $isiBerita[$i];
+                                                }
+                                                // increment index
+                                                $i++;
+                                                // decrement
+                                                $totalIsiBerita--;
+                                            }
+                                        }else {            // jika keyword ditemukan di atas 150 kata
+                                            // tampilan preview berita dari indeks ditemukan - 20
+                                            $isiBerita = "..." . substr($data["isi"],transisi($data['isi'])-20,175) . "...";
+                                            // pecah
+                                            $isiBerita = str_split($isiBerita);
+                                            // hitung array
+                                            $totalIsiBerita = count($isiBerita);
+                                            // untuk indeks
+                                            $i=0;
+                                            // mencari keyword
+                                            while( $totalIsiBerita > 0 ){
+                                                // buat tebal keywordnya
+                                                if ( $i >= 23 && $i <= 23+($totalState-2)) {
+                                                    echo "<b>" . $isiBerita[$i] . "</b>";
+                                                }else {
+                                                    echo $isiBerita[$i];
+                                                }
+                                                $i++;
+                                                $totalIsiBerita--;
+                                            }
+                                        }
+                                    ?>
+                                </p>
+                                <!-- read more -->
+                                <a href="berita.php?id=<?= $data['id_berita']; ?>" class="btn btn-danger">read more</a>
+                            </div>
+                        </div>
+                    </div>
                 <?php endif; ?>
-            </tr>
             <?php endforeach; ?>
-        </table>
+            </div>
+        </div>
 
         <!-- <br><br>
         <b>Nyoba aja</b><br>
@@ -125,23 +259,40 @@ function transisi ($kata) {
         punten = <?php transisi("punten"); ?><br>
         febri bangsat = <?php transisi("febri bangsat"); ?><br>
         hairul bangsa = <?php transisi("hairul bangsa"); ?><br> -->
-    <?php else : ?>
     
-        <table cellpadding=15 border=1>
-            <tr>
-                <td>ID</td>
-                <td>Judul</td>
-                <td>Isi</td>
-            </tr>
-            <tr>
-            <?php foreach ($berita as $data) : ?>
-                <td><?= $data["id_berita"] ?></td>
-                <td><?= $data["judul"] ?></td>
-                <td><?= $data["isi"] ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
+
+    <?php else : ?>
+
+        <div class="jumbotron text-center mt-5 mb-0" style="background:white">
+            <img src="logo.png" width=50% alt="">
+        </div>
+
+
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <form action="" method="POST">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></div>
+                            </div>
+                            <input type="text" class="form-control" id="keyword" name="keyword">
+                        </div>
+                        <div class="form-group mt-3">
+                            <div class="col-md-4 offset-md-4">
+                                <button type="submit" id="cari" class="form-control btn btn-danger" name="cari">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
     <?php endif; ?>
+
+    <!-- Bootstrap JS -->
+    <script src="bootstrap-4.4.1/js/bootstrap.min.js"></script>
+
 </body>
 </html>
