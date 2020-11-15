@@ -9,8 +9,11 @@ $beritaDB = mysqli_query($connect, "SELECT * FROM berita");
 // jika tombol pencarian di tekan
 if (isset($_POST["cari"])){
 
-    // ambil isi form
-    $keyword = $_POST["keyword"];
+    // keyword asli
+    $keywordAsli = $_POST["keyword"];
+
+    // ambil isi form dan tambahkan spasi sebelumnya
+    $keyword = " " . $_POST["keyword"];
 
     // biar aman
     $keyword = htmlspecialchars($keyword);
@@ -49,25 +52,49 @@ function transisi ($berita) {
 
     // true jika $arrayBerita > 0
     while ($totalArrayBerita > 0) {
-        // apakah katanya sama
-        if ($arrayBerita[$n] == $arrayKeyword[$m]) {
-            
-            // jika kata ditemukan. eg : covid, indeks terakhir = m = 4, $totalstate - 2 = (total huruf covid + 1) - 2 = 6-2 = 4. if (4==4) a.k.a true
-            if ($m == $totalState-2) {
-                // tentukan indeks kata ditemukan. eg : covid, tercovid, masuk ke kondisi ini ketika $n=7. $indeks = $n - ($totalState-2) = 7 - (6-2) = 7-4 = 3 (indeks ke 3 = c). $totalState-2 karena mencari total indeks covid = 4.
-                $indeks = $n - ($totalState-2);
-                // karena sdh ditemukan, $arrayBerita ubah jadi 0 supaya while berhenti
-                $totalArrayBerita = 0;
+        if ($n == 0){
+            // spasi jangan dimasukkan
+            $m = 1;
+            // apakah katanya sama
+            if ($arrayBerita[$n] == $arrayKeyword[$m]) {
+                // jika kata ditemukan. eg : covid, indeks terakhir = m = 4, $totalstate - 2 = (total huruf covid + 1) - 2 = 6-2 = 4. if (4==4) a.k.a true
+                if ($m == $totalState-2) {
+                    // tentukan indeks kata ditemukan. eg : covid, tercovid, masuk ke kondisi ini ketika $n=7. $indeks = $n - ($totalState-2) = 7 - (6-2) = 7-4 = 3 (indeks ke 3 = c). $totalState-2 karena mencari total indeks covid = 4.
+                    $indeks = $n - ($totalState-2);
+                    // karena sdh ditemukan, $arrayBerita ubah jadi 0 supaya while berhenti
+                    $totalArrayBerita = 0;
+                }
+    
+                // jika huruf sama maka increment n dan m
+                $n++;
+                $m++;
+            }else {     // jika tidak sama
+                // $m ulangi dari 0
+                $m = 0;
+                // $n increment untuk mencari yg sesuai dengan $m
+                $n++;
             }
-
-            // jika huruf sama maka increment n dan m
-            $n++;
-            $m++;
-        }else {     // jika tidak sama
-            // $m ulangi dari 0
-            $m = 0;
-            // $n increment untuk mencari yg sesuai dengan $m
-            $n++;
+        }else {
+            // apakah katanya sama
+            if ($arrayBerita[$n] == $arrayKeyword[$m]) {
+                
+                // jika kata ditemukan. eg : covid, indeks terakhir = m = 4, $totalstate - 2 = (total huruf covid + 1) - 2 = 6-2 = 4. if (4==4) a.k.a true
+                if ($m == $totalState-2) {
+                    // tentukan indeks kata ditemukan. eg : covid, tercovid, masuk ke kondisi ini ketika $n=7. $indeks = $n - ($totalState-2) = 7 - (6-2) = 7-4 = 3 (indeks ke 3 = c). $totalState-2 karena mencari total indeks covid = 4.
+                    $indeks = $n - ($totalState-2);
+                    // karena sdh ditemukan, $arrayBerita ubah jadi 0 supaya while berhenti
+                    $totalArrayBerita = 0;
+                }
+    
+                // jika huruf sama maka increment n dan m
+                $n++;
+                $m++;
+            }else {     // jika tidak sama
+                // $m ulangi dari 0
+                $m = 0;
+                // $n increment untuk mencari yg sesuai dengan $m
+                $n++;
+            }
         }
 
         // decrement $arrayBerita setiap while berjalan
@@ -120,11 +147,6 @@ function transisi ($berita) {
     <!-- jika pencarian dilakukan -->
     <?php if (isset($_POST["cari"])) : ?>
 
-        <!-- ambil keyword -->
-        <?php
-            $keyword = $_POST["keyword"]
-        ?>
-
         <!-- navbar -->
         <div class="navbar navbar-dark bg-light fixed-top mb-5">
             <div class="container">
@@ -157,7 +179,7 @@ function transisi ($berita) {
                         </div>
                         <!-- informasi keyword -->
                         <div class="card-body ml-3">
-                            Kata Kunci = <?= $keyword ?> <br>
+                            Kata Kunci = <?= $keywordAsli ?> <br>
                             Total State = <?= $totalState ?> <br>
                             Nama State = <?php for ($n=1;$n<=$totalState;$n++){ echo $n . " "; } ?> <br>
                             Initial State = 1 <br>
