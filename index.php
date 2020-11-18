@@ -32,8 +32,8 @@
                         <div class="input-group-prepend">
                             <div class="input-group-text"><i class="fa fa-database" aria-hidden="true"></i></div>
                         </div>
-                        <select name="rentang" id="rentang" class="form-control">
-                            <option value="" disabled selected>Pilih Rentang</option>
+                        <select name="range" id="range" class="form-control">
+                            <option value="" disabled selected>Database Ranges</option>
                             <option value=1>1-50</option>
                             <option value=2>51-100</option>
                             <option value=3>101-150</option>

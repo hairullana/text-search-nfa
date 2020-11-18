@@ -22,32 +22,22 @@ include 'connect-db.php';
 // jika tombol pencarian di tekan
 if (isset($_POST["cari"])) {
 
-    // ambil value range
     $range = $_POST["range"];
     // ambil isi form
     $keywordAsli = $_POST["keyword"];
+
     // biar aman
     $keyword = htmlspecialchars($keywordAsli);
+
     // buat semua huruf jadi kecil
     $keyword = strtolower($keyword);
-    // explode
-    $arrayKeyword = explode(' ', $keyword);
-    // jumlah kata dalam keyword
-    $jumlahArrayKeyword = count($arrayKeyword);
-    // menyimpan total huruf pada keyword
-    $totalHurufKeyword = 0;
+
     // pecah string
-    for ($i = 0 ; $i < $jumlahArrayKeyword ; $i++){
-        // pecah array jdi 2 dimensi
-        $arrayKeyword[$i] = str_split($arrayKeyword[$i]);
-        // hitung total huruf pada keyword
-        $totalHurufKeyword += count($arrayKeyword[$i]);
-    }
+    $arrayKeyword = str_split($keyword);
 
-    // jumlah state, total semua huruf + 1 (initial state)
-    $totalState = $totalHurufKeyword+1;
+    // jumlah state, covid = 5+1
+    $totalState = count($arrayKeyword) + 1;
 
-    // range
     if ($range == 1) {
         $beritaDB = mysqli_query($connect, "SELECT * FROM berita WHERE id_berita >= 1 AND id_berita <= 50");
     }else if($range == 2){
@@ -63,7 +53,6 @@ if (isset($_POST["cari"])) {
     }
 
 }else {
-    // jika tidak ada keyword maka kembali ke halaman awal
     echo "
         <script>
             alert('Kembali Ke Halaman Awal');
@@ -73,68 +62,57 @@ if (isset($_POST["cari"])) {
 }
 
 // mesin nfa
-function transisi($berita){
+function transisi($berita)
+{
 
     // mengambil variabel diluar fungsi
     global $arrayKeyword;
     global $totalState;
-    global $jumlahArrayKeyword;
 
     // ubah kata jadi kecil
     $berita = strtolower($berita);
     // pecah string
     $arrayBerita = str_split($berita);
-    // patokan kata keyword ke -n
-    $k = 0;
+    // hitung total array
+    $totalArrayBerita = count($arrayBerita);
 
-    // nilai untuk return
-    $hasil[0] = -1; // indeks nya, -1 artinya tidak terdapat pada indeks
-    $hasil[1] = 0; // ditemukan dengan kata keyword yg mana
 
-    // mulai mesin nya
-    // perulangan sesuai dengan jumlah kata pada keyword
-    for ($k=0 ; $k<$jumlahArrayKeyword; $k++) {
-        
-        // hitung total array
-        $totalArrayBerita = count($arrayBerita);
-        // patokan berita
-        $n = 0;
-        // patokan keyword
-        $m = 0;
+    // indeks ditemukannya keyword, index -1 artinya keyword tidak ditemukan pada indeks 0,1,2,dst
+    $indeks = -1;
+    // patokan berita
+    $n = 0;
+    // patokan keyword
+    $m = 0;
 
-        // jika lebihbesar dri 0
-        while ($totalArrayBerita > 0) {
-            // apakah katanya sama
-            if ($arrayBerita[$n] == $arrayKeyword[$k][$m]) {
-                // jika kata ditemukan. eg : covid, indeks terakhir = m = 4, count(covid) = 4. if (4==4) : true
-                if ($m == count($arrayKeyword[$k])-1) {
-                    // tentukan indeks kata ditemukan. dikurangi jumlah karakter kata keyword untuk menemukan indeks awal ditemukan
-                    $hasil[0] = $n - (count($arrayKeyword[$k]) - 1);
-                    // return 2, menentukan kata yang mana
-                    $hasil[1] = count($arrayKeyword[$k]);
-                    // karena sdh ditemukan, $arrayBerita ubah jadi 0 supaya while berhenti
-                    $totalArrayBerita = 0;
-                    // ganti vari k supaya perulangan for juga berhenti
-                    $k = $jumlahArrayKeyword;
-                }
-                
-                // jika huruf sama maka increment n dan m
-                $n++;
-                $m++;
-            } else {     // jika tidak sama
-                // $m ulangi dari 0
-                $m = 0;
-                // $n increment untuk mencari yg sesuai dengan $m
-                $n++;
+    // true jika $arrayBerita > 0
+    while ($totalArrayBerita > 0) {
+        // apakah katanya sama
+        if ($arrayBerita[$n] == $arrayKeyword[$m]) {
+
+            // jika kata ditemukan. eg : covid, indeks terakhir = m = 4, $totalstate - 2 = (total huruf covid + 1) - 2 = 6-2 = 4. if (4==4) a.k.a true
+            if ($m == $totalState - 2) {
+                // tentukan indeks kata ditemukan. eg : covid, tercovid, masuk ke kondisi ini ketika $n=7. $indeks = $n - ($totalState-2) = 7 - (6-2) = 7-4 = 3 (indeks ke 3 = c). $totalState-2 karena mencari total indeks covid = 4.
+                $indeks = $n - ($totalState - 2);
+                // karena sdh ditemukan, $arrayBerita ubah jadi 0 supaya while berhenti
+                $totalArrayBerita = 0;
             }
-            
-            // decrement $arrayBerita setiap while berjalan
-            $totalArrayBerita--;
+
+            // jika huruf sama maka increment n dan m
+            $n++;
+            $m++;
+        } else {     // jika tidak sama
+            // $m ulangi dari 0
+            $m = 0;
+            // $n increment untuk mencari yg sesuai dengan $m
+            $n++;
         }
+
+        // decrement $arrayBerita setiap while berjalan
+        $totalArrayBerita--;
     }
 
-    // return array hasil
-    return $hasil;
+    // return indeks 
+    return $indeks;
 }
 
 ?>
@@ -151,7 +129,7 @@ function transisi($berita){
 <body>
     <!-- ambil keyword -->
     <?php
-    $keyword = $_POST["keyword"];
+    $keyword = $_POST["keyword"]
     ?>
 
     <!-- navbar -->
@@ -162,7 +140,6 @@ function transisi($berita){
     </div>
     <!-- end navbar -->
 
-    
 
     <!-- card untuk informasi pencarian -->
     <div class="container my-5">
@@ -176,14 +153,12 @@ function transisi($berita){
                                 <div class="input-group-prepend">
                                     <div class="input-group-text"><i class="fa fa-search" aria-hidden="true"></i></div>
                                 </div>
-                                <!-- kolom pencarian -->
                                 <input type="text" class="form-control" id="keyword" name="keyword" value="<?= $keyword ?>" autocomplete="off">
                             </div>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text"><i class="fa fa-database" aria-hidden="true"></i></div>
                                 </div>
-                                <!-- range database -->
                                 <select name="range" id="range" class="form-control">
                                     <?php if ($range == 1) : ?>
                                         <option value=1 selected>1-50</option>
@@ -221,11 +196,9 @@ function transisi($berita){
                             <div class="form-group mt-3">
                                 <div class="col-md-8 offset-md-2">
                                     <div class="row">
-                                        <!-- search -->
                                         <div class="col-md-6 mb-1">
                                             <button type="submit" id="cari" class="form-control btn btn-danger rounded-pill" name="cari">Search</button>
                                         </div>
-                                        <!-- tambah berita -->
                                         <div class="col-md-6">
                                             <a class="form-control btn btn-danger rounded-pill text-light" href="tambah-berita.php">Add Articel</a>
                                         </div>
@@ -254,30 +227,28 @@ function transisi($berita){
     <div class="container">
         <div class="row">
 
-
             <!-- mengambil data berita -->
             <?php foreach ($beritaDB as $data) : ?>
+            
+                <!-- jika terdapat kata yg ditemukan -->
+                <?php if (transisi($data["isi"]) >= 0) : ?>
 
-                <!-- masukkan ke dalam mesin -->
-                <?php $hasil = transisi($data["isi"]); ?>
-                <!-- jika terdapat kata yg ditemukan, maka tampilan -->
-                <?php if ($hasil[0] > -1) : ?>
                     <!-- kotak berita -->
                     <div class="col-md-6">
                         <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                             <div class="col p-4 flex-column position-static">
 
                                 <!-- judul -->
-                                <h3 class="mb-1"><?= substr($data["judul"], 0, 40) . "..." ?></h3>
+                                <h3 class="mb-1"><?= substr($data["judul"], 0, 30) . "..." ?></h3>
 
-                                <!-- informasi ditemukannya pada indeks ke berapa -->
-                                <small class="mb-1 text-muted">Ditemukan pada indeks ke-<?= $hasil[0]; ?></small>
+                                <!-- informasi indeks -->
+                                <small class="mb-1 text-muted">Ditemukan pada indeks ke-<?= transisi($data["isi"]); ?></small>
 
                                 <!-- isi artikel -->
                                 <p class="card-text mb-1">
                                     <?php
                                     // jika ditemukan pada 150 kata pertama
-                                    if ($hasil[0] < 150) {
+                                    if (transisi($data["isi"]) < 150) {
                                         // tampilan preview berita
                                         $isiBerita = substr($data["isi"], 0, 175) . "...";
                                         // pecah
@@ -289,7 +260,7 @@ function transisi($berita){
                                         // mencari keyword
                                         while ($totalIsiBerita > 0) {
                                             // kalau keyword maka buat tebal
-                                            if ($i >= $hasil[0] && $i <= $hasil[0] + $hasil[1] - 1) {
+                                            if ($i >= transisi($data["isi"]) && $i <= transisi($data["isi"]) + ($totalState - 2)) {
                                                 echo "<b>" . $isiBerita[$i] . "</b>";
                                             } else {
                                                 // jika tidak ya biarin gan
@@ -302,7 +273,7 @@ function transisi($berita){
                                         }
                                     } else {            // jika keyword ditemukan di atas 150 kata
                                         // tampilan preview berita dari indeks ditemukan - 20
-                                        $isiBerita = "..." . substr($data["isi"], $hasil[0] - 20, 175) . "...";
+                                        $isiBerita = "..." . substr($data["isi"], transisi($data['isi']) - 20, 175) . "...";
                                         // pecah
                                         $isiBerita = str_split($isiBerita);
                                         // hitung array
@@ -312,7 +283,7 @@ function transisi($berita){
                                         // mencari keyword
                                         while ($totalIsiBerita > 0) {
                                             // buat tebal keywordnya
-                                            if ($i >= 23 && $i <= 23 + $hasil[1] -1) {
+                                            if ($i >= 23 && $i <= 23 + ($totalState - 2)) {
                                                 echo "<b>" . $isiBerita[$i] . "</b>";
                                             } else {
                                                 echo $isiBerita[$i];
@@ -345,67 +316,23 @@ function transisi($berita){
                     </button>
                 </div>
                 <div class="modal-body">
-                    <!-- kata kunci -->
                     Kata Kunci = <?= $keyword ?> <br>
-                    <!-- total state -->
                     Total State = <?= $totalState ?> <br>
-                    <!--  initial state -->
                     Initial State = 1 <br>
-                    <!-- final state -->
-                    Final State = 
-                    <?php
-                        // menampung jumlah kata sebelumnya
-                        $x=0;
-                        for($i=0;$i<count($arrayKeyword);$i++){
-                            // kalau kata pertama tdk perlu pakai x. ditambah 1 karena dipakai initial state 1 biji
-                            if ($i==0){
-                                echo count($arrayKeyword[$i])+1 . " ";
-                            }else{ // perlu ditambahkan x karena ada kata di sebelumnya
-                                echo count($arrayKeyword[$i])+$x+1 . " ";
-                            }
-                            // operasi nambah x
-                            $x += count($arrayKeyword[$i]);
-                        }
-                    ?><br>
-                    <!-- tabel informasi delta -->
+                    Final State = <?= $totalState ?><br>
                     <table class="table text-center mt-2">
                         <tr>
                             <th>State Awal</th>
                             <th>Input</th>
                             <th>State Tujuan</th>
                         </tr>
-                        <!-- inisialisasikan x untuk menghitung jumlah state sebelumnya jika berada pada kata ke 2,3,dst  -->
-                        <?php $x=0;$j=0; while ($j < count($arrayKeyword) ) : ?>
-                            <?php
-                                // jika bukan kata pertama, tambahkan var x dengan jumlah kata sblmnya
-                                if ($j > 0) {
-                                    $x+=count($arrayKeyword[$j-1]);
-                                }
-                            ?>
-                            <!-- perulangan array per kata -->
-                            <?php for ($i = 0; $i < count($arrayKeyword[$j]); $i++) : ?>
-                                <tr>
-                                    <!-- jika kata pertama -->
-                                    <?php if ($j == 0) : ?>
-                                        <td><?= $i + 1; ?></td>
-                                        <td><?= $arrayKeyword[$j][$i]; ?></td>
-                                        <td><?= $i + 2; ?></td>
-                                    <!-- jika bkn kata pertama -->
-                                    <?php elseif ($j > 0) : ?>
-                                        <!-- jika huruf pertama pada suatu kata di keyword (dari state 1 lagi) -->
-                                        <?php if ($i == 0) : ?>
-                                            <td><?= $i+1; ?></td>
-                                        <!-- jika tidak -->
-                                        <?php else : ?>
-                                            <td><?= $x+$i+1; ?></td>
-                                        <?php endif; ?>
-                                        <td><?= $arrayKeyword[$j][$i]; ?></td>
-                                        <td><?= $x+$i+2; ?></td>
-                                    <?php endif; ?>
-                                </tr>
-                            <?php endfor; ?>
-                            <?php $j++; ?>
-                        <?php endwhile; ?>
+                        <?php for ($i = 0; $i < strlen($keyword); $i++) : ?>
+                            <tr>
+                                <td><?= $i + 1 ?></td>
+                                <td><?= $arrayKeyword[$i] ?></td>
+                                <td><?= $i + 2 ?></td>
+                            </tr>
+                        <?php endfor; ?>
                     </table>
                 </div>
                 <div class="modal-footer">
