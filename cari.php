@@ -191,30 +191,42 @@ function transisi($berita){
                                         <option value=3>101-150</option>
                                         <option value=4>151-200</option>
                                         <option value=5>201-230</option>
+                                        <option value=6>All Articles</option>
                                     <?php elseif ($range == 2) : ?>
                                         <option value=1>1-50</option>
                                         <option value=2 selected>51-100</option>
                                         <option value=3>101-150</option>
                                         <option value=4>151-200</option>
                                         <option value=5>201-230</option>
+                                        <option value=6>All Articles</option>
                                     <?php elseif ($range == 3) : ?>
                                         <option value=1>1-50</option>
                                         <option value=2>51-100</option>
                                         <option value=3 selected>101-150</option>
                                         <option value=4>151-200</option>
                                         <option value=5>201-230</option>
+                                        <option value=6>All Articles</option>
                                     <?php elseif ($range == 4) : ?>
                                         <option value=1>1-50</option>
                                         <option value=2>51-100</option>
                                         <option value=3>101-150</option>
                                         <option value=4 selected>151-200</option>
                                         <option value=5>201-230</option>
+                                        <option value=6>All Articles</option>
                                     <?php elseif ($range == 5) : ?>
                                         <option value=1>1-50</option>
                                         <option value=2>51-100</option>
                                         <option value=3>101-150</option>
                                         <option value=4>151-200</option>
                                         <option value=5 selected>201-230</option>
+                                        <option value=6>All Articles</option>
+                                    <?php elseif ($range == 6) : ?>
+                                        <option value=1>1-50</option>
+                                        <option value=2>51-100</option>
+                                        <option value=3>101-150</option>
+                                        <option value=4>151-200</option>
+                                        <option value=5>201-230</option>
+                                        <option value=6 selected>All Articles</option>
                                     <?php endif; ?>
                                 </select>
                             </div>
@@ -227,7 +239,7 @@ function transisi($berita){
                                         </div>
                                         <!-- tambah berita -->
                                         <div class="col-md-6">
-                                            <a class="form-control btn btn-danger rounded-pill text-light" href="tambah-berita.php">Add Articel</a>
+                                            <a class="form-control btn btn-danger rounded-pill text-light" href="tambah-berita.php">Add Article</a>
                                         </div>
                                     </div>
                                 </div>

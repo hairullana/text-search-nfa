@@ -39,6 +39,7 @@
                             <option value=3>101-150</option>
                             <option value=4>151-200</option>
                             <option value=5>201-230</option>
+                            <option value=6>All Articles</option>
                         </select>
                     </div>
                     <div class="form-group mt-3">
@@ -48,7 +49,7 @@
                                     <button type="submit" id="cari" class="form-control btn btn-danger rounded-pill" name="cari">Search</button>
                                 </div>
                                 <div class="col-md-6">
-                                    <a class="form-control btn btn-danger rounded-pill text-light" href="tambah-berita.php">Add Articel</a>
+                                    <a class="form-control btn btn-danger rounded-pill text-light" href="tambah-berita.php">Add Article</a>
                                 </div>
                             </div>
 
